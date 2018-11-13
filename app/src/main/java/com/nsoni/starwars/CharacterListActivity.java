@@ -1,9 +1,11 @@
 package com.nsoni.starwars;
 
+import android.arch.lifecycle.Observer;
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.v7.app.AppCompatActivity;
+import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
@@ -12,7 +14,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 
-import com.nsoni.starwars.model.Result;
+import com.nsoni.starwars.data.Character;
+import com.nsoni.starwars.data.Result;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,29 +32,30 @@ import retrofit2.Response;
  * item details. On tablets, the activity presents the list of items and
  * item details side-by-side using two vertical panes.
  */
-public class CharacterListActivity extends AppCompatActivity {
+public class CharacterListActivity extends BaseActivity {
 
     /**
      * Whether or not the activity is in two-pane mode, i.e. running on a tablet
      * device.
      */
     boolean mTwoPane;
-    List<com.nsoni.starwars.model.Character> listOfCharacters;
-    RecyclerView recyclerView;
+    List<com.nsoni.starwars.data.Character> mCharacterList;
+    RecyclerView mRecyclerView;
+    private CharacterListViewModel mViewModel;
+    private AppThreadExecutor mAppThreadExecutor;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_character_list);
-
-        final Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        toolbar.setTitle(getTitle());
+        setupToolbar();
 
 
-        recyclerView = findViewById(R.id.character_list);
-        assert recyclerView != null;
-        setupRecyclerView(recyclerView);
+        mRecyclerView = findViewById(R.id.character_list);
+        assert mRecyclerView != null;
+        setupRecyclerView(mRecyclerView);
+
+        setupViewModelObserver();
 
         if (findViewById(R.id.character_detail_container) != null) {
             // The detail container view will be present only in the
@@ -60,6 +64,35 @@ public class CharacterListActivity extends AppCompatActivity {
             // activity should be in two-pane mode.
             mTwoPane = true;
         }
+
+        mAppThreadExecutor = new AppThreadExecutor();
+
+        fetchCharactersFromNetwork("");
+    }
+
+    private void setupToolbar() {
+        final Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        toolbar.setTitle(getTitle());
+    }
+
+    private void setupViewModelObserver() {
+        mViewModel = ViewModelProviders.of(this).get(CharacterListViewModel.class);
+        mViewModel.getCharacterList().observe(this, new Observer<List<Character>>() {
+            @Override
+            public void onChanged(@Nullable List<Character> characters) {
+                if (characters != null && !characters.isEmpty()) {
+                    mCharacterList.clear();
+                    mCharacterList.addAll(characters);
+                    mAppThreadExecutor.mainThread().execute(new Runnable() {
+                        @Override
+                        public void run() {
+                            mRecyclerView.getAdapter().notifyDataSetChanged();
+                        }
+                    });
+                }
+            }
+        });
     }
 
     @Override
@@ -85,8 +118,23 @@ public class CharacterListActivity extends AppCompatActivity {
             }
 
             @Override
-            public boolean onQueryTextChange(String starWarsCharacterSearchWord) {
-                updateCharacterList(starWarsCharacterSearchWord);
+            public boolean onQueryTextChange(final String starWarsCharacterSearchWord) {
+                mAppThreadExecutor.diskIO().execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        List<Character> list = mViewModel.getCharacterByName(starWarsCharacterSearchWord);
+                        if (list != null && !list.isEmpty()) {
+                            mCharacterList.clear();
+                            mCharacterList.addAll(list);
+                            mAppThreadExecutor.mainThread().execute(new Runnable() {
+                                @Override
+                                public void run() {
+                                    mRecyclerView.getAdapter().notifyDataSetChanged();
+                                }
+                            });
+                        }
+                    }
+                });
                 return false;
             }
         });
@@ -95,7 +143,7 @@ public class CharacterListActivity extends AppCompatActivity {
         return true;
     }
 
-    private void updateCharacterList(String starWarsCharacterSearchWord) {
+    private void fetchCharactersFromNetwork(String starWarsCharacterSearchWord) {
         StarWarsClient client = ServiceGenerator
                 .getInstance(CharacterListActivity.this)
                 .createService(StarWarsClient.class);
@@ -104,26 +152,29 @@ public class CharacterListActivity extends AppCompatActivity {
 
         resultCall.enqueue(new Callback<Result>() {
             @Override
-            public void onResponse(Call<Result> call, Response<Result> response) {
-                if (response.body() != null && response.body().getResults() != null) {
-                    listOfCharacters.clear();
-                    listOfCharacters.addAll(response.body().getResults());
-                    recyclerView.getAdapter().notifyDataSetChanged();
-                }
+            public void onResponse(Call<Result> call, final Response<Result> response) {
+                mAppThreadExecutor.diskIO().execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (response.body() != null && response.body().getResults() != null) {
+                            mViewModel.insertCharacterList(response.body().getResults());
+                        }
+                    }
+                });
             }
 
             @Override
             public void onFailure(Call<Result> call, Throwable throwable) {
-
+                mNetworkStatusSnackbar.setText(throwable.getMessage());
+                mNetworkStatusSnackbar.show();
             }
         });
     }
 
     private void setupRecyclerView(@NonNull RecyclerView recyclerView) {
-        if (listOfCharacters == null) {
-            listOfCharacters = new ArrayList<>();
+        if (mCharacterList == null) {
+            mCharacterList = new ArrayList<>();
         }
-        recyclerView.setAdapter(new SimpleItemRecyclerViewAdapter(this, listOfCharacters));
+        recyclerView.setAdapter(new SimpleItemRecyclerViewAdapter(this, mCharacterList));
     }
-
 }

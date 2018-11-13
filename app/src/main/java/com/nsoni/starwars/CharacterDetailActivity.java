@@ -1,7 +1,9 @@
 package com.nsoni.starwars;
 
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.widget.Toolbar;
@@ -16,7 +18,7 @@ import android.view.MenuItem;
  * item details are presented side-by-side with a list of items
  * in a {@link CharacterListActivity}.
  */
-public class CharacterDetailActivity extends AppCompatActivity {
+public class CharacterDetailActivity extends BaseActivity  {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,4 +56,6 @@ public class CharacterDetailActivity extends AppCompatActivity {
         }
         return super.onOptionsItemSelected(item);
     }
+
+
 }

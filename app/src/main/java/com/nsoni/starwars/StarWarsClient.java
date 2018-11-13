@@ -1,6 +1,6 @@
 package com.nsoni.starwars;
 
-import com.nsoni.starwars.model.Result;
+import com.nsoni.starwars.data.Result;
 
 import retrofit2.Call;
 import retrofit2.http.GET;

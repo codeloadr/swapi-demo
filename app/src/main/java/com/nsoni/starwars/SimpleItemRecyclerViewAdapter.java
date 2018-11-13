@@ -15,9 +15,9 @@ public class SimpleItemRecyclerViewAdapter
         extends RecyclerView.Adapter<SimpleItemRecyclerViewAdapter.ViewHolder> {
 
     private CharacterListActivity characterListActivity;
-    private final List<com.nsoni.starwars.model.Character> mValues;
+    private final List<com.nsoni.starwars.data.Character> mValues;
 
-    public SimpleItemRecyclerViewAdapter(CharacterListActivity characterListActivity, List<com.nsoni.starwars.model.Character> items) {
+    public SimpleItemRecyclerViewAdapter(CharacterListActivity characterListActivity, List<com.nsoni.starwars.data.Character> items) {
         this.characterListActivity = characterListActivity;
         mValues = items;
     }
@@ -64,7 +64,7 @@ public class SimpleItemRecyclerViewAdapter
     public class ViewHolder extends RecyclerView.ViewHolder {
         public final View mView;
         public final TextView mNameView;
-        public com.nsoni.starwars.model.Character mItem;
+        public com.nsoni.starwars.data.Character mItem;
 
         public ViewHolder(View view) {
             super(view);

@@ -1,4 +1,4 @@
-package com.nsoni.starwars.model;
+package com.nsoni.starwars.data;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
@@ -18,7 +18,7 @@ public class Result {
     private Object previous;
     @SerializedName("results")
     @Expose
-    private List<com.nsoni.starwars.model.Character> results = null;
+    private List<com.nsoni.starwars.data.Character> results = null;
 
     public Integer getCount() {
         return count;
@@ -44,11 +44,11 @@ public class Result {
         this.previous = previous;
     }
 
-    public List<com.nsoni.starwars.model.Character> getResults() {
+    public List<com.nsoni.starwars.data.Character> getResults() {
         return results;
     }
 
-    public void setResults(List<com.nsoni.starwars.model.Character> results) {
+    public void setResults(List<com.nsoni.starwars.data.Character> results) {
         this.results = results;
     }
 
