@@ -25,7 +25,7 @@ public class CharacterDetailFragment extends Fragment {
     /**
      * The dummy content this fragment is presenting.
      */
-    private com.nsoni.starwars.model.Character mItem;
+    private com.nsoni.starwars.data.Character mItem;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the

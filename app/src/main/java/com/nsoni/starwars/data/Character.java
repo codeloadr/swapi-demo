@@ -1,53 +1,90 @@
-package com.nsoni.starwars.model;
+package com.nsoni.starwars.data;
 
+import android.arch.persistence.room.ColumnInfo;
+import android.arch.persistence.room.Entity;
+import android.arch.persistence.room.PrimaryKey;
+import android.arch.persistence.room.TypeConverters;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
 import java.util.List;
 
+@Entity(tableName = Character.TABLE_NAME)
 public class Character implements Parcelable {
 
+    public static final String TABLE_NAME = "characters";
     @SerializedName("name")
     @Expose
+    @PrimaryKey
+    @NonNull
+    @ColumnInfo(name = "name")
     private String name;
     @SerializedName("height")
     @Expose
+    @Nullable
+    @ColumnInfo(name = "height")
     private String height;
     @SerializedName("mass")
     @Expose
+    @Nullable
+    @ColumnInfo(name = "mass")
     private String mass;
     @SerializedName("hair_color")
     @Expose
+    @Nullable
+    @ColumnInfo(name = "hair_color")
     private String hairColor;
     @SerializedName("skin_color")
     @Expose
+    @Nullable
+    @ColumnInfo(name = "skin_color")
     private String skinColor;
     @SerializedName("eye_color")
     @Expose
     private String eyeColor;
     @SerializedName("birth_year")
     @Expose
+    @Nullable
+    @ColumnInfo(name = "birth_year")
     private String birthYear;
     @SerializedName("gender")
     @Expose
+    @Nullable
+    @ColumnInfo(name = "gender")
     private String gender;
     @SerializedName("homeworld")
     @Expose
+    @Nullable
+    @ColumnInfo(name = "homeworld")
     private String homeWorld;
     @SerializedName("films")
     @Expose
+    @Nullable
+    @ColumnInfo(name = "films")
+    @TypeConverters({Converters.class})
     private List<String> films = null;
     @SerializedName("species")
     @Expose
+    @Nullable
+    @ColumnInfo(name = "species")
+    @TypeConverters({Converters.class})
     private List<String> species = null;
     @SerializedName("vehicles")
     @Expose
+    @Nullable
+    @ColumnInfo(name = "vehicles")
+    @TypeConverters({Converters.class})
     private List<String> vehicles = null;
     @SerializedName("starships")
     @Expose
+    @Nullable
+    @ColumnInfo(name = "starships")
+    @TypeConverters({Converters.class})
     private List<String> starShips = null;
     @SerializedName("created")
     @Expose
@@ -214,7 +251,8 @@ public class Character implements Parcelable {
         dest.writeString(this.url);
     }
 
-    public Character() {
+    public Character(String name) {
+        this.name = name;
     }
 
     protected Character(Parcel in) {

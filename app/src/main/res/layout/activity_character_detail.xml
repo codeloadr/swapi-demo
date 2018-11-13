@@ -5,6 +5,7 @@
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
     tools:context="com.nsoni.starwars.CharacterDetailActivity"
+    android:id="@+id/coordinator"
     tools:ignore="MergeRootFrame">
 
     <android.support.design.widget.AppBarLayout
