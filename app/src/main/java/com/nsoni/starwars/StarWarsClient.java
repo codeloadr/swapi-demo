@@ -9,6 +9,6 @@ import retrofit2.http.Query;
 public interface StarWarsClient {
 
     @GET("/api/people/")
-    Call<Result> lookupCharacterNames(@Query("search") String searchWord);
+    Call<Result> lookupCharacterNames(@Query("search") String searchWord, @Query("page") int pageNumber);
 
 }

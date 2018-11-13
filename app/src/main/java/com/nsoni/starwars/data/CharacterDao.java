@@ -13,7 +13,7 @@ public interface CharacterDao {
     @Query("SELECT * FROM " + Character.TABLE_NAME + " WHERE name LIKE '%' || :name || '%'")
     List<Character> getCharacterByName(String name);
 
-    @Query("SELECT * FROM " + Character.TABLE_NAME)
+    @Query("SELECT * FROM " + Character.TABLE_NAME + " ORDER BY created")
     LiveData<List<Character>> getCharacterList();
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
