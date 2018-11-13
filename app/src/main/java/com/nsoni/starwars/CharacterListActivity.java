@@ -9,6 +9,7 @@ import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -19,6 +20,8 @@ import com.nsoni.starwars.data.Result;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -39,7 +42,7 @@ public class CharacterListActivity extends BaseActivity {
      * device.
      */
     boolean mTwoPane;
-    List<com.nsoni.starwars.data.Character> mCharacterList;
+    List<Character> mCharacterList;
     RecyclerView mRecyclerView;
     private CharacterListViewModel mViewModel;
     private AppThreadExecutor mAppThreadExecutor;
@@ -67,13 +70,12 @@ public class CharacterListActivity extends BaseActivity {
 
         mAppThreadExecutor = new AppThreadExecutor();
 
-        fetchCharactersFromNetwork("");
+        fetchCharactersFromNetwork("", 1);
     }
 
     private void setupToolbar() {
         final Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        toolbar.setTitle(getTitle());
     }
 
     private void setupViewModelObserver() {
@@ -83,7 +85,7 @@ public class CharacterListActivity extends BaseActivity {
             public void onChanged(@Nullable List<Character> characters) {
                 if (characters != null && !characters.isEmpty()) {
                     mCharacterList.clear();
-                    mCharacterList.addAll(characters);
+                    mCharacterList.addAll(mCharacterList);
                     mAppThreadExecutor.mainThread().execute(new Runnable() {
                         @Override
                         public void run() {
@@ -100,7 +102,7 @@ public class CharacterListActivity extends BaseActivity {
         getMenuInflater().inflate(R.menu.menu_search, menu);
         final MenuItem searchItem = menu.findItem(R.id.action_search);
         final SearchView searchView = (SearchView) searchItem.getActionView();
-        searchView.setQueryHint("Search People");
+        searchView.setQueryHint("Find Star Wars People By Name");
         searchView.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
@@ -126,13 +128,15 @@ public class CharacterListActivity extends BaseActivity {
                         if (list != null && !list.isEmpty()) {
                             mCharacterList.clear();
                             mCharacterList.addAll(list);
-                            mAppThreadExecutor.mainThread().execute(new Runnable() {
-                                @Override
-                                public void run() {
-                                    mRecyclerView.getAdapter().notifyDataSetChanged();
-                                }
-                            });
+                        } else {
+                            mCharacterList.clear();
                         }
+                        mAppThreadExecutor.mainThread().execute(new Runnable() {
+                            @Override
+                            public void run() {
+                                mRecyclerView.getAdapter().notifyDataSetChanged();
+                            }
+                        });
                     }
                 });
                 return false;
@@ -143,12 +147,12 @@ public class CharacterListActivity extends BaseActivity {
         return true;
     }
 
-    private void fetchCharactersFromNetwork(String starWarsCharacterSearchWord) {
+    private void fetchCharactersFromNetwork(final String starWarsCharacterSearchWord, final int next) {
         StarWarsClient client = ServiceGenerator
                 .getInstance(CharacterListActivity.this)
                 .createService(StarWarsClient.class);
 
-        Call<Result> resultCall = client.lookupCharacterNames(starWarsCharacterSearchWord);
+        Call<Result> resultCall = client.lookupCharacterNames(starWarsCharacterSearchWord, next);
 
         resultCall.enqueue(new Callback<Result>() {
             @Override
@@ -161,6 +165,15 @@ public class CharacterListActivity extends BaseActivity {
                         }
                     }
                 });
+
+                if (response.body().getNext() != null && !response.body().getNext().isEmpty()) {
+                    mAppThreadExecutor.diskIO().execute(new Runnable() {
+                        @Override
+                        public void run() {
+                            fetchCharactersFromNetwork(starWarsCharacterSearchWord, next + 1);
+                        }
+                    });
+                }
             }
 
             @Override

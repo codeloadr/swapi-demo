@@ -60,10 +60,16 @@ public class CharacterDetailFragment extends Fragment {
         // Show the dummy content as text in a TextView.
         if (mItem != null) {
             ((TextView) rootView.findViewById(R.id.character_detail)).setText(
-                    "Born: " + mItem.getBirthYear() + "\n" +
-                    "Gender: " + mItem.getGender() + "\n" +
-                    "Height: " + mItem.getHeight() + "\n" +
-                    "Mass: " + mItem.getMass() + "\n");
+                    "Born: " + mItem.getBirthYear() + "\n\n" +
+                    "Gender: " + mItem.getGender() + "\n\n" +
+                    "Height: " + mItem.getHeight() + "\n\n" +
+                    "Mass: " + mItem.getMass() + "\n\n" +
+                            "Eye Color: " + mItem.getEyeColor() + "\n\n" +
+                            "Hair Color: " + mItem.getHairColor() + "\n\n" +
+                            "Home World: " + mItem.getHomeWorld() + "\n\n" +
+                            "Skin Color: " + mItem.getSkinColor() + "\n\n" +
+                            "URL: " + mItem.getUrl() + "\n\n"
+                    );
         }
 
         return rootView;
